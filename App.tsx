@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
+import emailjs from '@emailjs/browser';
 import { 
-  Egg, MapPin, Phone, Facebook, CheckCircle2, Menu, X, 
-  TrendingDown, Sprout, Handshake, ShieldCheck, ThermometerSun, 
+  Egg, MapPin, Phone, Facebook, Menu, X, 
+  TrendingDown, ShieldCheck, ThermometerSun, 
   Truck, Scale, Utensils, Coins, BadgeCheck, Megaphone, 
   Briefcase, TrendingUp, ChefHat, HeartPulse, Leaf, Bird
 } from 'lucide-react';
 
 import ChatWidget from './components/ChatWidget';
 import RecipeGenerator from './components/RecipeGenerator';
-import Gallery from './components/Gallery';
 import FAQ from './components/FAQ';
 import { PriceItem, OrderForm } from './types';
 
@@ -133,19 +133,45 @@ export default function App() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    alert("Thank you! Your order/inquiry has been successfully sent to Legal Chicks.");
-    setFormData({
-      name: '',
-      contactNumber: '',
-      location: '',
-      inquiryType: 'Dark Mahogany RIR Eggs',
-      quantity: '',
-      message: ''
-    });
-    setIsSubmitting(false);
+    // EmailJS Configuration
+    const serviceId = 'service_4iddr3o';
+    const templateId = 'template_zeu72o5';
+    const publicKey = 'RY1tGe1iEiMGRXdX4';
+
+    const templateParams = {
+        from_name: formData.name,
+        contact_number: formData.contactNumber,
+        location: formData.location,
+        inquiry_type: formData.inquiryType,
+        quantity: formData.quantity,
+        message: formData.message,
+        to_name: 'Legal Chicks Admin'
+    };
+
+    try {
+        await emailjs.send(serviceId, templateId, templateParams, publicKey);
+        alert("Thank you! Your order/inquiry has been successfully sent to Legal Chicks.");
+        
+        // Reset form on success
+        setFormData({
+            name: '',
+            contactNumber: '',
+            location: '',
+            inquiryType: 'Dark Mahogany RIR Eggs',
+            quantity: '',
+            message: ''
+        });
+    } catch (error) {
+        console.error("EmailJS Error:", error);
+        // Fallback to mailto if EmailJS fails (e.g. invalid template ID or network error)
+        alert("We encountered an issue sending the email directly. We will open your email client instead.");
+        
+        const subject = `Reservation Inquiry: ${formData.inquiryType} - ${formData.name}`;
+        const body = `Name: ${formData.name}\nContact Number: ${formData.contactNumber}\nLocation: ${formData.location}\nInquiry Type: ${formData.inquiryType}\nQuantity: ${formData.quantity}\n\nMessage:\n${formData.message}`;
+        window.location.href = `mailto:bitlingan@legalchicks.vip?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
@@ -163,7 +189,6 @@ export default function App() {
             <button onClick={() => handleScroll('home')} className="text-sm font-medium hover:text-red-600 transition-colors">Home</button>
             <button onClick={() => handleScroll('advantage')} className="text-sm font-medium hover:text-red-600 transition-colors">Why Us</button>
             <button onClick={() => handleScroll('breed-info')} className="text-sm font-medium hover:text-red-600 transition-colors text-red-700 font-bold">Breed Info</button>
-            <button onClick={() => handleScroll('network')} className="text-sm font-medium hover:text-red-600 transition-colors text-blue-700 font-bold">The Network</button>
             <button onClick={() => handleScroll('resellers')} className="text-sm font-medium hover:text-red-600 transition-colors">Resellers</button>
             <button onClick={() => handleScroll('products')} className="text-sm font-medium hover:text-red-600 transition-colors">Pricing</button>
           </div>
@@ -184,7 +209,6 @@ export default function App() {
              <button onClick={() => handleScroll('home')} className="block w-full text-left font-medium py-2 text-slate-600">Home</button>
              <button onClick={() => handleScroll('advantage')} className="block w-full text-left font-medium py-2 text-slate-600">Northern Advantage</button>
              <button onClick={() => handleScroll('breed-info')} className="block w-full text-left font-medium py-2 text-red-700">Why RIR?</button>
-             <button onClick={() => handleScroll('network')} className="block w-full text-left font-medium py-2 text-blue-700">The Network</button>
              <button onClick={() => handleScroll('resellers')} className="block w-full text-left font-medium py-2 text-slate-600">Resellers</button>
              <button onClick={() => handleScroll('products')} className="block w-full text-left font-medium py-2 text-slate-600">Price List</button>
             <button className="w-full bg-red-700 text-white py-3 rounded-md font-medium" onClick={() => handleScroll('contact')}>Inquire Now</button>
@@ -218,9 +242,6 @@ export default function App() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="h-12 px-8 text-lg bg-red-700 hover:bg-red-800 rounded-md font-bold transition-transform hover:-translate-y-0.5 shadow-lg shadow-red-900/20" onClick={() => handleScroll('products')}>
               See Price List
-            </button>
-            <button className="h-12 px-8 text-lg bg-white/10 border border-white/20 text-white hover:bg-white/20 rounded-md font-medium backdrop-blur-sm transition-colors" onClick={() => handleScroll('network')}>
-              Join The Network
             </button>
           </div>
         </div>
@@ -340,80 +361,6 @@ export default function App() {
                </div>
             </div>
 
-          </div>
-        </div>
-      </section>
-
-      {/* GALLERY SECTION */}
-      <Gallery />
-
-      {/* THE NETWORK SECTION */}
-      <section id="network" className="py-24 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row gap-16 items-center">
-            <div className="md:w-1/2">
-               <div className="inline-block rounded-full bg-blue-100 px-4 py-1.5 text-xs font-bold text-blue-700 mb-6 tracking-wide">
-                  SOCIAL ENTERPRISE
-               </div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-6 text-slate-900 leading-tight">
-                The Empowerment Network
-              </h2>
-              <p className="text-slate-600 text-lg mb-8 leading-relaxed">
-                Legal Chicks is more than a farm; it's a movement. We are building a "Hybrid Social Enterprise" that partners with local farmers to secure food sovereignty.
-              </p>
-              <div className="space-y-6">
-                <div className="flex gap-5">
-                   <div className="bg-green-100 p-3 rounded-full h-fit"><Sprout className="w-6 h-6 text-green-600 shrink-0" /></div>
-                   <div>
-                     <h4 className="font-bold text-lg text-slate-800 mb-1">Opportunity Packages</h4>
-                     <p className="text-slate-500 leading-relaxed">Access to quality chicks, feed support, and training to start your farm correctly.</p>
-                   </div>
-                </div>
-                <div className="flex gap-5">
-                   <div className="bg-blue-100 p-3 rounded-full h-fit"><Handshake className="w-6 h-6 text-blue-600 shrink-0" /></div>
-                   <div>
-                     <h4 className="font-bold text-lg text-slate-800 mb-1">Community Clusters</h4>
-                     <p className="text-slate-500 leading-relaxed">Join a network of growers in your barangay for shared resources and market access.</p>
-                   </div>
-                </div>
-              </div>
-              <div className="mt-10">
-                <button 
-                  className="bg-slate-900 text-white px-8 py-3 rounded-md font-medium hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20"
-                  onClick={() => {
-                    setFormData(prev => ({...prev, inquiryType: 'Network Membership Inquiry'}));
-                    handleScroll('contact');
-                  }}
-                >
-                  Join the Network
-                </button>
-              </div>
-            </div>
-            
-            <div className="md:w-1/2 bg-slate-50 rounded-3xl p-10 border border-slate-200 shadow-xl relative">
-               <div className="absolute top-0 right-0 -mt-6 -mr-6 bg-yellow-400 text-yellow-900 font-bold px-4 py-2 rounded-lg shadow-md transform rotate-3">
-                  Farmer First!
-               </div>
-               <h3 className="font-bold text-2xl mb-6 text-slate-800">Why Join Us?</h3>
-               <ul className="space-y-4">
-                 <li className="flex items-start gap-3">
-                   <CheckCircle2 className="w-6 h-6 text-green-600 shrink-0" />
-                   <span className="text-slate-700">Access to purebred "Dark Mahogany" stock not found elsewhere.</span>
-                 </li>
-                 <li className="flex items-start gap-3">
-                   <CheckCircle2 className="w-6 h-6 text-green-600 shrink-0" />
-                   <span className="text-slate-700">Mentorship on the "Legal Chicks System" for low mortality.</span>
-                 </li>
-                 <li className="flex items-start gap-3">
-                   <CheckCircle2 className="w-6 h-6 text-green-600 shrink-0" />
-                   <span className="text-slate-700">Support from incubation to harvest.</span>
-                 </li>
-                 <li className="flex items-start gap-3">
-                   <CheckCircle2 className="w-6 h-6 text-green-600 shrink-0" />
-                   <span className="text-slate-700">Be part of a legal, recognized entity for government grants.</span>
-                 </li>
-               </ul>
-            </div>
           </div>
         </div>
       </section>
@@ -670,7 +617,9 @@ export default function App() {
                   <div>
                     <h3 className="font-bold text-slate-900 text-lg">Social Media</h3>
                     <a 
-                      href="#" 
+                      href="https://www.facebook.com/LegalChicksPoultryFarm/" 
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-slate-600 hover:text-blue-600 hover:underline transition-colors"
                     >
                       Legal Chicks Poultry Farm
@@ -739,7 +688,6 @@ export default function App() {
                         <option value="" disabled>Select an Item</option>
                         <optgroup label="Partnership">
                         <option value="Reseller Application">Reseller Application (Business)</option>
-                        <option value="Network Membership Inquiry">Joining the Empowerment Network (Farmer)</option>
                         </optgroup>
                         <optgroup label="Live Stock">
                         <option value="Chicks (Day old - 1 wk)">Chicks (Day old - 1 wk) @ ₱100</option>
